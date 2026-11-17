@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Macro Jython 2.7 para Modelio: casos de uso de "Reconoce tu Barrio: El Tintal".
 # Antes de ejecutarla, selecciona un paquete en el explorador de modelo.
 from org.modelio.api.modelio import Modelio
@@ -7,18 +6,18 @@ SISTEMA = u"Reconoce tu Barrio: El Tintal"
 CASOS = [
     u"CU-01: Centros Educativos",
     u"CU-02: Escenarios Deportivos",
-    u"CU-03: Sistemas de Cámaras de Seguridad",
+    u"CU-03: Sistemas de C\xe1maras de Seguridad",
     u"CU-04: Zonas Verdes",
     u"CU-05: Datos Catastrales",
     u"CU-06: Estado de Calles",
     u"CU-07: Estaciones del Sistema de Transporte",
     u"CU-08: Sitios de Comida",
-    u"CU-09: Librerías",
+    u"CU-09: Librer\xedas",
     u"CU-10: Datos sobre Robos",
-    u"CU-11: Información o Datos de la Localidad",
-    u"CU-12: Centros de Atención Inmediata",
+    u"CU-11: Informaci\xf3n o Datos de la Localidad",
+    u"CU-12: Centros de Atenci\xf3n Inmediata",
     u"CU-13: Veterinarias",
-    u"CU-14: Barberías"
+    u"CU-14: Barber\xedas"
 ]
 modelio = Modelio.getInstance()
 session = modelio.getModelingSession()
