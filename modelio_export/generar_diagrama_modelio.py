@@ -70,29 +70,25 @@ print("Paquete contenedor: %s (%s)" % (duenio.getName(), type(duenio).__name__))
 tx = session.createTransaction("Casos de uso Vecino")
 try:
     paquete = model.createPackage(SISTEMA, duenio)
-    actor = model.createActor()
-    actor.setName(u"Vecino")
-    actor.setOwner(paquete)
-    casos = []
-    for nombre in CASOS:
-        uc = model.createUseCase()
-        uc.setName(nombre)
-        uc.setOwner(paquete)
-        casos.append(uc)
+    actor = model.createActor(u"Vecino", paquete)
+    casos = [model.createUseCase(nombre, paquete) for nombre in CASOS]
     enlaces = [model.createAssociation(actor, uc, u"") for uc in casos]
     diagrama = model.createUseCaseDiagram(u"Casos de uso", paquete, None)
+    # El dibujo tambien modifica el modelo: va dentro de la transaccion.
+    handle = modelio.getDiagramService().getDiagramHandle(diagrama)
+    handle.unmask(actor, 100, 350)
+    for i, uc in enumerate(casos):
+        columna, fila = i // 7, i % 7
+        handle.unmask(uc, 450 + columna * 360, 40 + fila * 100)
+    for enlace in enlaces:
+        try:
+            handle.unmask(enlace, 0, 0)
+        except Exception as e:
+            print("Aviso al dibujar un enlace: %s" % e)
+    handle.save()
+    handle.close()
     tx.commit()
 except:
     tx.rollback()
     raise
-
-handle = modelio.getDiagramService().getDiagramHandle(diagrama)
-handle.unmask(actor, 100, 350)
-for i, uc in enumerate(casos):
-    columna, fila = i // 7, i % 7
-    handle.unmask(uc, 500 + columna * 330, 40 + fila * 100)
-for enlace in enlaces:
-    handle.unmask(enlace, 0, 0)
-handle.save()
-handle.close()
 print("Listo: 1 actor, %d casos, %d asociaciones" % (len(casos), len(enlaces)))
