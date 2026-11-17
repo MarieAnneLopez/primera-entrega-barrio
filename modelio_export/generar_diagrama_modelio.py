@@ -22,7 +22,19 @@ CASOS = [
 modelio = Modelio.getInstance()
 session = modelio.getModelingSession()
 model = session.getModel()
-from org.modelio.metamodel.uml.statik import Package
+from org.modelio.metamodel.uml.statik import Package, NameSpace
+
+def como_namespace(x):
+    # getModel() devuelve un paquete o una lista de paquetes segun la version.
+    if isinstance(x, NameSpace):
+        return x
+    try:
+        for e in x:
+            if isinstance(e, NameSpace):
+                return e
+    except TypeError:
+        pass
+    return None
 
 def raiz_del_modelo():
     # La clase Project cambia de paquete segun la version de Modelio.
@@ -30,9 +42,12 @@ def raiz_del_modelo():
                 "org.modelio.metamodel.uml.infrastructure"):
         try:
             clase = getattr(__import__(mod, fromlist=["Project"]), "Project")
-            return session.findByClass(clase).get(0).getModel()
-        except Exception:
-            pass
+            for proyecto in session.findByClass(clase):
+                r = como_namespace(proyecto.getModel())
+                if r is not None:
+                    return r
+        except Exception as e:
+            print("Aviso (%s): %s" % (mod, e))
     # Plan B: el paquete de mas arriba (sin dueno que sea un paquete).
     for p in session.findByClass(Package):
         if not isinstance(p.getOwner(), Package):
@@ -41,8 +56,8 @@ def raiz_del_modelo():
 
 duenio = None
 try:
-    if len(selectedElements) > 0 and isinstance(selectedElements[0], Package):
-        duenio = selectedElements[0]
+    if len(selectedElements) > 0:
+        duenio = como_namespace(selectedElements[0])
 except NameError:
     pass
 if duenio is None:
@@ -50,6 +65,7 @@ if duenio is None:
     duenio = raiz_del_modelo()
 if duenio is None:
     raise Exception("Selecciona un paquete en el explorador y reintenta")
+print("Paquete contenedor: %s (%s)" % (duenio.getName(), type(duenio).__name__))
 
 tx = session.createTransaction("Casos de uso Vecino")
 try:
