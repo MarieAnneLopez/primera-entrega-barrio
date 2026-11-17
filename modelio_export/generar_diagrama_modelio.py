@@ -1,5 +1,5 @@
 # Macro Jython 2.7 para Modelio: casos de uso de "Reconoce tu Barrio: El Tintal".
-# Antes de ejecutarla, selecciona un paquete en el explorador de modelo.
+# Si hay un paquete seleccionado lo usa; si no, usa la raiz del proyecto.
 from org.modelio.api.modelio import Modelio
 
 SISTEMA = u"Reconoce tu Barrio: El Tintal"
@@ -22,7 +22,18 @@ CASOS = [
 modelio = Modelio.getInstance()
 session = modelio.getModelingSession()
 model = session.getModel()
-duenio = selectedElements[0]
+from org.modelio.metamodel.uml.statik import Package
+from org.modelio.metamodel.uml.infrastructure import Project
+
+duenio = None
+try:
+    if len(selectedElements) > 0 and isinstance(selectedElements[0], Package):
+        duenio = selectedElements[0]
+except NameError:
+    pass
+if duenio is None:
+    # Sin paquete seleccionado: usa la raiz del modelo del proyecto.
+    duenio = session.findByClass(Project).get(0).getModel()
 
 tx = session.createTransaction("Casos de uso Vecino")
 try:
