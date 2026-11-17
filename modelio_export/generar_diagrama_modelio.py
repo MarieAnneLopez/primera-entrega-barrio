@@ -23,7 +23,21 @@ modelio = Modelio.getInstance()
 session = modelio.getModelingSession()
 model = session.getModel()
 from org.modelio.metamodel.uml.statik import Package
-from org.modelio.metamodel.uml.infrastructure import Project
+
+def raiz_del_modelo():
+    # La clase Project cambia de paquete segun la version de Modelio.
+    for mod in ("org.modelio.metamodel.mda",
+                "org.modelio.metamodel.uml.infrastructure"):
+        try:
+            clase = getattr(__import__(mod, fromlist=["Project"]), "Project")
+            return session.findByClass(clase).get(0).getModel()
+        except Exception:
+            pass
+    # Plan B: el paquete de mas arriba (sin dueno que sea un paquete).
+    for p in session.findByClass(Package):
+        if not isinstance(p.getOwner(), Package):
+            return p
+    return None
 
 duenio = None
 try:
@@ -33,7 +47,9 @@ except NameError:
     pass
 if duenio is None:
     # Sin paquete seleccionado: usa la raiz del modelo del proyecto.
-    duenio = session.findByClass(Project).get(0).getModel()
+    duenio = raiz_del_modelo()
+if duenio is None:
+    raise Exception("Selecciona un paquete en el explorador y reintenta")
 
 tx = session.createTransaction("Casos de uso Vecino")
 try:
