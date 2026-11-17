@@ -24,20 +24,21 @@ session = modelio.getModelingSession()
 model = session.getModel()
 from org.modelio.metamodel.uml.statik import Package, NameSpace
 
-def como_namespace(x):
-    # getModel() devuelve un paquete o una lista de paquetes segun la version.
-    if isinstance(x, NameSpace):
+def util(x):  # solo un paquete que el usuario pueda modificar
+    return isinstance(x, Package) and x.isModifiable()
+
+def como_namespace(x):  # acepta un paquete o una lista de paquetes
+    if util(x):
         return x
     try:
         for e in x:
-            if isinstance(e, NameSpace):
+            if util(e):
                 return e
     except TypeError:
         pass
     return None
 
 def raiz_del_modelo():
-    # La clase Project cambia de paquete segun la version de Modelio.
     for mod in ("org.modelio.metamodel.mda",
                 "org.modelio.metamodel.uml.infrastructure"):
         try:
@@ -48,9 +49,8 @@ def raiz_del_modelo():
                     return r
         except Exception as e:
             print("Aviso (%s): %s" % (mod, e))
-    # Plan B: el paquete de mas arriba (sin dueno que sea un paquete).
     for p in session.findByClass(Package):
-        if not isinstance(p.getOwner(), Package):
+        if not isinstance(p.getOwner(), Package) and util(p):
             return p
     return None
 
@@ -61,7 +61,6 @@ try:
 except NameError:
     pass
 if duenio is None:
-    # Sin paquete seleccionado: usa la raiz del modelo del proyecto.
     duenio = raiz_del_modelo()
 if duenio is None:
     raise Exception("Selecciona un paquete en el explorador y reintenta")
@@ -69,17 +68,21 @@ print("Paquete contenedor: %s (%s)" % (duenio.getName(), type(duenio).__name__))
 
 tx = session.createTransaction("Casos de uso Vecino")
 try:
+    # Re-ejecutable: borra el paquete que dejo una ejecucion anterior.
+    for viejo in list(duenio.getOwnedElement()):
+        if viejo.getName() == SISTEMA:
+            viejo.delete()
     paquete = model.createPackage(SISTEMA, duenio)
     actor = model.createActor(u"Vecino", paquete)
     casos = [model.createUseCase(nombre, paquete) for nombre in CASOS]
     enlaces = [model.createAssociation(actor, uc, u"") for uc in casos]
     diagrama = model.createUseCaseDiagram(u"Casos de uso", paquete, None)
-    # El dibujo tambien modifica el modelo: va dentro de la transaccion.
     handle = modelio.getDiagramService().getDiagramHandle(diagrama)
     handle.unmask(actor, 100, 350)
+    # Una columna en abanico: ninguna linea cruza un caso de uso.
     for i, uc in enumerate(casos):
-        columna, fila = i // 7, i % 7
-        handle.unmask(uc, 450 + columna * 360, 40 + fila * 100)
+        nodo = handle.unmask(uc, 520, 20 + i * 72).get(0)
+        nodo.setSize(300, 58)
     for enlace in enlaces:
         try:
             handle.unmask(enlace, 0, 0)
@@ -92,3 +95,6 @@ except:
     tx.rollback()
     raise
 print("Listo: 1 actor, %d casos, %d asociaciones" % (len(casos), len(enlaces)))
+# Muestra el diagrama en el explorador y lo abre en el editor.
+modelio.getNavigationService().fireNavigate(diagrama)
+modelio.getEditionService().openEditor(diagrama)

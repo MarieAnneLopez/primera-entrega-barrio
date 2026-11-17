@@ -27,10 +27,10 @@ Actor único: **Vecino** (en los documentos del proyecto aparece como «Visitant
 3. En el explorador de modelo, crea un *Use Case Diagram* en el paquete y arrastra el actor y los casos.
 4. Guarda el proyecto.
 
-**Opción B — script (dibuja el diagrama completo)**
-1. Abre un proyecto en Modelio y selecciona su paquete raíz en el explorador.
-2. Abre la consola de macros (Jython) y carga `generar_diagrama_modelio.py`.
-3. Ejecútalo: crea paquete, actor, 14 casos, 14 asociaciones y el diagrama.
-4. Abre el diagrama «Casos de uso» y guarda.
+**Opción B — script (recomendada: dibuja el diagrama completo)**
+1. Abre tu proyecto en Modelio (no hace falta seleccionar nada).
+2. En la vista *Script*, pulsa el botón de carpeta con flecha verde (abrir y ejecutar) y elige `generar_diagrama_modelio.py`.
+3. La consola muestra «Listo: 1 actor, 14 casos, 14 asociaciones» y el diagrama «Casos de uso» se abre solo.
+4. Guarda el proyecto con Ctrl+S. Se puede volver a ejecutar: reemplaza el paquete anterior sin duplicar.
 
-> Aviso: la importación XMI y la API de macros varían entre versiones de Modelio; no se probaron porque Modelio no está instalado en este equipo.
+> Probado en Modelio Open Source 5.4.1 (2026-11-16). La opción A (XMI) no se probó.
